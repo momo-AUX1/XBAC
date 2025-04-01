@@ -3,17 +3,14 @@
 #include "cube.h"
 
 #ifdef __XBOX_BUILD
-// ===== Added external_main entry point =====
 extern "C" __attribute__((visibility("default")))
 int external_main(SDL_Window *hostWindow, SDL_GLContext hostGLContext, int argc, char **argv)
 {
-    // Use the host's window and GL context
     screen = hostWindow;
     glcontext = hostGLContext;
     if(SDL_GL_MakeCurrent(screen, glcontext) < 0)
         fatal("Failed to set host GL context: %s", SDL_GetError());
     updatescreensize();
-    // Now simply forward to main
     return main(argc, argv);
 }
 #endif
