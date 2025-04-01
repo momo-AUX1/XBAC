@@ -15,6 +15,10 @@ else
     ACDEBUG=no
 endif
 
+ifdef XBOX_BUILD
+  CXXFLAGS += -D__XBOX_BUILD
+endif
+
 PLATFORM=$(shell uname -s)
 
 # This prefix is only used to name the installed executables.
@@ -32,6 +36,8 @@ ifeq ($(ACDEBUG),yes)
 	CXXFLAGS= -O0
 	override CXXFLAGS+= -g -D_DEBUG
 endif
+
+
 
 ifneq (,$(findstring clang,$(CXX)))
 	CXXFLAGS= -O3 -fomit-frame-pointer
@@ -51,6 +57,11 @@ ifeq (,$(findstring -g,$(CXXFLAGS)))
 ifeq (,$(findstring -pg,$(CXXFLAGS)))
   STRIP=strip
 endif
+endif
+
+ifdef XBOX_BUILD
+  OEXT = .dll
+  LDFLAGS += -shared
 endif
 
 MV=mv

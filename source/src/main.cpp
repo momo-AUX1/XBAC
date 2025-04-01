@@ -2,6 +2,22 @@
 
 #include "cube.h"
 
+#ifdef __XBOX_BUILD
+// ===== Added external_main entry point =====
+extern "C" __attribute__((visibility("default")))
+int external_main(SDL_Window *hostWindow, SDL_GLContext hostGLContext, int argc, char **argv)
+{
+    // Use the host's window and GL context
+    screen = hostWindow;
+    glcontext = hostGLContext;
+    if(SDL_GL_MakeCurrent(screen, glcontext) < 0)
+        fatal("Failed to set host GL context: %s", SDL_GetError());
+    updatescreensize();
+    // Now simply forward to main
+    return main(argc, argv);
+}
+#endif
+
 void cleanup(char *msg)         // single program exit point;
 {
     if(clientlogfile) clientlogfile->fflush();
@@ -626,6 +642,11 @@ void setupscreen(int &useddepthbits, int &usedfsaa)
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, config&4 ? fsaa : 0);
         }
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        #ifdef __XBOX_BUILD
+        screen = SDL_GL_GetCurrentWindow();
+        glcontext = SDL_GL_GetCurrentContext();
+        if(screen && glcontext) break;
+        #else
         screen = SDL_CreateWindow("AssaultCube",
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
             winw, winh,
@@ -636,6 +657,7 @@ void setupscreen(int &useddepthbits, int &usedfsaa)
             if(glcontext) break;
             SDL_DestroyWindow(screen);
         }
+        #endif
     }
     if(!screen) fatal("Unable to create OpenGL screen");
     else
